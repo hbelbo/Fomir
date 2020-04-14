@@ -1,0 +1,15 @@
+Package: Fomir
+Title: Forest Operations Models in R
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Helmer", family = "Belbo", role = c("aut", "cre"), 
+    email = "helmer.belbo@nibio.no")
+Description: This package provide implementation of forest operations models 
+  for estimating time consumtion, costs, etc in forest operations.
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.0.2
+Imports: 
+    magrittr,
+    dplyr

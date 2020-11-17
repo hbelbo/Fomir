@@ -9,6 +9,8 @@ harv_forw(stands_df, forw_size = "large", modelversion = "Talbot16")
 \arguments{
 \item{stands_df}{A data frame of stands for which harvester and forwarder
 time consumption is to be estimated.
+
+
 Mandatory variables in stands_df:
   v mean volume m3fub of the harvested trees in the stand
   Nharv Number of trees per hectare
@@ -28,9 +30,19 @@ Should also take "xl" and "xxl" but not yet implemented}
 }
 \value{
 a data frame with harvester and forwarder time consumption (hrs hectare^-1)
+\describe{
+\item{harv_G15h.ha}{Harvester G15 hours per hectare}
+\item{forw_G15h.ha}{Forwarder G15 hours per hectare}}
+#' @export
 }
 \description{
 Time consumption harvester and forwarder
+}
+\details{
+\strong{variables in stands_df:}
+\describe{
+\item{v}{mean m3fub of harvested trees}
+\item{Nharv}{N harvested trees per hectare}}
 }
 \examples{
 harv_forw(stands_df = testdf_volume) \%>\% dplyr::glimpse()

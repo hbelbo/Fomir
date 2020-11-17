@@ -228,6 +228,9 @@ t_harv = function(stands_df, modelversion = "Talbot16"){
 #'
 #'
 #' @return a data frame with forwarder time consumption (minutes per hectare)
+#' \strong{variables in output df:}
+#' \describe{
+#' \item{forw_G15h.ha}{Forwarder G15 hours per hectare}}
 #' @export
 #'
 #' @examples
@@ -344,6 +347,7 @@ t_forw <- function(stands_df, forw_size = "large", modelversion = "Talbot16") {
             forw_G15h.ha = round((forw_G15min.ha / 60), 2),
             forw_m3.G15h = 60 / forw_G15min.m3) %>%
      dplyr::select(., -tidyselect::starts_with("tt"),
+                   -t_forw.m3,
                       -tidyselect::num_range("t", 4:8)) %>%
      dplyr::select(., tidyselect::starts_with("forw_"), tidyselect::everything())
 
@@ -357,6 +361,9 @@ t_forw <- function(stands_df, forw_size = "large", modelversion = "Talbot16") {
 #'
 #' @param stands_df A data frame of stands for which harvester and forwarder
 #' time consumption is to be estimated.
+#'
+#'
+
 #' Mandatory variables in stands_df:
 #'   v mean volume m3fub of the harvested trees in the stand
 #'   Nharv Number of trees per hectare
@@ -373,9 +380,16 @@ t_forw <- function(stands_df, forw_size = "large", modelversion = "Talbot16") {
 #' Should also take "xl" and "xxl" but not yet implemented
 #' @param modelversion one of "Brunberg" | "Talbot16"
 #'
-#' @return a data frame with harvester and forwarder time consumption (hrs hectare^-1)
-#' @export
-#'
+#' @return a data frame with harvester and forwarder time consumption estimates
+#' \strong{variables in output df:}
+#' \describe{#'
+#' \item{harv_G15h.ha}{Harvester G15 hours per hectare}
+#' \item{forw_G15h.ha}{Forwarder G15 hours per hectare}}
+#' @details
+#' \strong{variables in stands_df:}
+#' \describe{
+#' \item{v}{mean m3fub of harvested trees}
+#' \item{Nharv}{N harvested trees per hectare}}
 #' @examples
 #' harv_forw(stands_df = testdf_volume) %>% dplyr::glimpse()
 #' harv_forw(stands_df = stand_data_norsk_prodnorm, forw_size = "large", modelversion = "Talbot16") %>% dplyr::glimpse()

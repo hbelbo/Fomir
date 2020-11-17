@@ -62,8 +62,6 @@ trees per ha are provided within the functions.
 
 
 ```{r example}
-library(Fomir)
-
 ## example of data frame of stands to be clearcuted
 
 heureka_testdata_clearcutting %>% dplyr::glimpse()

@@ -1,5 +1,8 @@
 ---
 output: github_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -13,53 +16,57 @@ knitr::opts_chunk$set(
 )
 ```
 
-
 # Fomir
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 Forest operation models in R
 
-The goal of Fomir is to provide functions for estimating time consumption, costs, and other inputs in forest operations. Unless otherwise specified, all functions take a data.frame as argument and assume each row is one treatment unit, normally one forest stand.  Reference literature for all functions is provided in the "inst/extdata" direcotry of the package.  
-For the moment there are functions for 
+The goal of Fomir is to provide functions for estimating time
+consumption, costs, and other inputs in forest operations. Unless
+otherwise specified, all functions take a data.frame as argument and
+assume each row is one treatment unit, normally one forest stand.
+Reference literature for all functions is provided in the "inst/extdata"
+direcotry of the package.\
+For the moment there are functions for
 
-* Harvesting: time consumption per per stem, per m^3, per ha 
-* Forwarding: time consumption per m3 & per ha  
-  
-
-
+-   Harvesting: time consumption per per stem, per m\^3, per ha
+-   Forwarding: time consumption per m3 & per ha
 
 ## Installation
+
 Installation of `Fomir` from github:
 
-``` r  
+``` r
 devtools::install_github("hbelbo/Fomir")
 ```
 
-Load Fomir and dependent packages: 
-``` {r, echo = T, message = F}
+Load Fomir and dependent packages:
+
+```{r, echo = T, message = F}
 invisible( lapply( c("magrittr", "dplyr", "Fomir"), library, character.only = T))
 ```
 
 ## Harvesting and forwarding operations
-Time consumption models for harvester and forwarder are based on Brunberg's time consumption models, found in the Heureka documentation 
-https://www.heurekaslu.se/w/images/8/8c/Time_consumption_harvester_and_forwarder.pdf
+
+Time consumption models for harvester and forwarder are based on
+Brunberg's time consumption models, found in the Heureka documentation
+<https://www.heurekaslu.se/w/images/8/8c/Time_consumption_harvester_and_forwarder.pdf>
 A Norwegian counterpart / adaption is found at Skogkurs
-https://www.skogkurs.no/kunnskapsskogen/artikkel.cfm?Id_art=3269
-
-
-
+<https://www.skogkurs.no/kunnskapsskogen/artikkel.cfm?Id_art=3269>
 
 ### stands data and variables
-Stand characteristics like mean stem volume, slope, species composition etc 
-must follow the naming conventions used in the Heureka documentation below.  
-NB: Reasonable default values for all variables except mean stem size and harvested 
-trees per ha are provided within the functions. 
 
-<img src="man/figures/Stand_Variables_p1.png" />
-<img src="man/figures/Stand_Variables_p2.png" />
+Stand characteristics like mean stem volume, slope, species composition
+etc must follow the naming conventions used in the Heureka documentation
+below.\
+NB: Reasonable default values for all variables except mean stem size
+and harvested trees per ha are provided within the functions.
 
+<img src="man/figures/Stand_Variables_p1.png"/>
+<img src="man/figures/Stand_Variables_p2.png"/>
 
 ```{r example}
 ## example of data frame of stands to be clearcuted
@@ -68,7 +75,6 @@ heureka_testdata_clearcutting %>% dplyr::glimpse()
 
 
 ```
-
 
 ```{r example2}
 ## t_harv()

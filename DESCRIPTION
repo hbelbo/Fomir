@@ -9,7 +9,11 @@ Description: This package provide implementation of forest operations models
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.2
+RoxygenNote: 7.2.3
 Imports: 
     magrittr,
-    dplyr
+    dplyr,
+    rlang,
+    tidyselect
+Depends: 
+    R (>= 2.10)

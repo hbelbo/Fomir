@@ -1,8 +1,10 @@
-
-
-
 # Forwarder time consumption model -----
 #' t_forw_bb
+#'
+#' #' @description
+#' `t_forw_bb()` estimate forwarder time consumption in forest operations, according
+#' to models presented in the swedish Heureka description,
+#' and a later modified version by Bruce Talbod (NIBIO Norway)
 #'
 #' @param stands_df
 #' A data frame having stand characteristics according to the
@@ -22,6 +24,8 @@
 #' Should also take "xl" and "xxl" but not implemented
 #'
 #' @param modelversion one of "Brunberg" | "Talbot16"
+#' @param treatment one of "thinning" | "clearcutting"
+#' @param harvest_strength_pct  share of basal area to be cut. Range 0-100
 #' @param verbose if TRUE: more intermediate time consumption sstimates will be returned
 #'
 #' @return a data frame with forwarder time consumption (minutes per hectare)
@@ -31,41 +35,46 @@
 #' @export
 #'
 #' @examples
-#' t_forw_bb(stands_df = testdata_heureka_forwarding) %>% dplyr::glimpse()
-#' t_forw_bb(stands_df = testdata_heureka_thinning) %>% dplyr::glimpse()
-#' t_forw_bb(stands_df = testdata_heureka_clearcutting) %>% dplyr::glimpse()
-#' t_forw_bb(stands_df = testdata_clearcut_Talbot16) %>% dplyr::glimpse()
-#'
-t_forw_bb <- function(stands_df, forw_size = "large", modelversion = "Talbot16", verbose = FALSE) {
+#' t_forw_bb(stands_df = testdata_heureka_forwarding, verbose = TRUE) %>% dplyr::glimpse()
+#' t_forw_bb(stands_df = testdata_heureka_thinning, verbose = TRUE) %>% dplyr::glimpse()
+#' t_forw_bb(stands_df = testdata_heureka_clearcutting, verbose = TRUE) %>% dplyr::glimpse()
+t_forw_bb <- function(stands_df, forw_size = "large", modelversion = c("Brunberg04", "Talbot16")[2],
+                      treatment = c("thinning", "clearcutting")[2],
+                      harvest_strength_pct = 100, #pct basal area
+                      verbose = FALSE) {
   # stands_df = heureka_testdata_forwarding
   # forw_size = "large"; modelversion = "Talbot16"
   # prepping data frame ----
+
+  stopifnot(is.data.frame(stands_df))
+  stopifnot(c("v", "Stems_ha") %in% names(stands_df))
+
   standvars <- colnames(stands_df)
 
   # preparig the dataset ----
-  stands_df = stands_df %>%
-    dplyr::mutate(
-      Nharv  = if ("Nharv" %in% standvars) .data$Nharv else 1000,
-      v = if("v" %in% standvars) .data$v else 0.3,
-      #v = if (exists('v', where = .data)) v else 0.3,
-      nbAssortments = if("nbAssortments" %in% standvars) .data$nbAssortments else 4,
-      #nbAssortments = if (exists('nbAssortments', where = .data)) nbAssortments else 4,
-      treatment =  if( "treatment" %in% standvars) .data$treatment else "clearcutting",
-      #treatment = if (exists('treatment', where = .data)) treatment else "clearcutting",
-      L = if ( 'L' %in% standvars ) .data$L else 2,
-      Y = if ( 'Y' %in% standvars ) .data$Y else 2,
-      Vharv = .data$Nharv * .data$v ,
-      forw_size = if ( "forw_size" %in% standvars ) .data$forw_size else forw_size,
-      modelversion = if ( "modelversion" %in% standvars ) .data$modelversion else modelversion,
-      D = if("D" %in% standvars) .data$D else 300)
+  if (!("forw_size" %in% standvars)){stands_df$forw_size = forw_size }
+  if (!("nbAssortments" %in% standvars)){stands_df$nbAssortments = 4 }
+  if (!("L" %in% standvars)){stands_df$L = 2 }
+  if (!("Y" %in% standvars)){stands_df$Y = 2 }
+  if (!("D" %in% standvars)){stands_df$D = 200 }
+  if (!("D_basveg" %in% standvars)){stands_df$D_basveg = 200 }
+  if (!("treatment" %in% standvars)){stands_df$treatment = treatment }
+  if (!("harvest_strength_pct" %in% standvars)){stands_df$harvest_strength_pct = harvest_strength_pct }
+  if (!("modelversion" %in% standvars)){stands_df$modelversion = modelversion }
+
+
+
+
+  # Removal per hectare
+  stands_df$Vharv = stands_df$Stems_ha * stands_df$v * stands_df$harvest_strength_pct/100
+  stands_df$Nharv = stands_df$Vharv / stands_df$v
 
 
 
   # heureka t4 terminal time forwarder (G15min / m3fub) -----
   #    for loading, driving during loading and unloading forwarder
 
-  tt4 <- stands_df %>%
-    dplyr::select( .data$Vharv, .data$treatment, .data$forw_size, .data$modelversion) %>%
+  stands_df <- stands_df %>%
     dplyr::mutate(
       a = dplyr::case_when(
         .data$treatment == "thinning"  ~ -43,
@@ -89,14 +98,12 @@ t_forw_bb <- function(stands_df, forw_size = "large", modelversion = "Talbot16",
         .data$treatment == "thinning" ~ trunk_rng(.data$Vharv, 25, 125),
         TRUE ~  trunk_rng(.data$Vharv, 50, 350) ), # clearcutting
       t4 = .data$K1 * ((.data$a + .data$K2*.data$Vharv2 + .data$b*sqrt(.data$Vharv2))/.data$Vharv2 )
-    ) %>%
-    dplyr::select( .data$t4)
+    )
 
 
 
   # heureka t5 driving time forwarder (G15-min / m3fub) -----
-  tt5 <- stands_df  %>%
-    dplyr::select( .data$Y, .data$L, .data$treatment, .data$forw_size, .data$D) %>%
+  stands_df <- stands_df  %>%
     dplyr::mutate(
       speed = (75 - (8.2 * .data$Y) - (1.4 * .data$L^2)), # Brunberg 04; meter / G15-min
       speed = dplyr::if_else(.data$treatment == "clearcutting", .data$speed , (0.85 * .data$speed)),
@@ -105,23 +112,18 @@ t_forw_bb <- function(stands_df, forw_size = "large", modelversion = "Talbot16",
         .data$forw_size == "medium" ~ 13.6,
         .data$forw_size == "large" ~ 17.9,
         TRUE ~ 17.9),
-      t5 = (2*.data$D / (.data$speed * .data$c_cap))) %>%
-    dplyr::select( .data$t5)
+      t5 = (2*.data$D / (.data$speed * .data$c_cap)))
 
   # heureka_t6 Assortment dependent time, G15min / m3fub -----
-  tt6 <- stands_df %>%
-    dplyr::select( .data$v) %>%
+  stands_df <- stands_df %>%
     dplyr::mutate(
       vtr = trunk_rng(.data$v, 0, 0.5),
       t6 = 0.05 - .data$vtr    # Brunberg 2004
-    ) %>%
-    dplyr::select( .data$t6)
+    )
 
   # heureka t7 forwarder sorting time, G15min / m3fub  ----
-  tt7 <- stands_df  %>%
-    dplyr::select(.data$nbAssortments ) %>%
-    dplyr::mutate( t7 = -0.1 + 0.1 * .data$nbAssortments ) %>%
-    dplyr::select( .data$t7)
+  stands_df <- stands_df  %>%
+    dplyr::mutate( t7 = -0.1 + 0.1 * .data$nbAssortments )
 
 
 
@@ -129,8 +131,7 @@ t_forw_bb <- function(stands_df, forw_size = "large", modelversion = "Talbot16",
 
   # return forwarder additional time, G15 minutes per hectare
   #  assuming 1.5 minute per load, and calculating loads per hectare
-  tt8 <- stands_df  %>%
-    dplyr::select( .data$forw_size, .data$Vharv) %>%
+  stands_df <-  stands_df  %>%
     dplyr::mutate(
       c_cap = dplyr::case_when(
         forw_size == "small" ~ 9.5,
@@ -138,27 +139,24 @@ t_forw_bb <- function(stands_df, forw_size = "large", modelversion = "Talbot16",
         forw_size == "large" ~ 17.9,
         TRUE ~ 17.9),
       nbLoads = floor((.data$Vharv / .data$c_cap) + .99),
-      t8 = 1.5 * .data$nbLoads) %>%
-    dplyr::select(.data$c_cap, .data$nbLoads,  .data$t8)
+      t8 = 1.5 * .data$nbLoads)
 
   # merging forwarder times tt4 ... tt7 ------
 
-  tforw_df = dplyr::bind_cols(tt4, tt5, tt6,  tt7)  %>%
+  stands_df <-  stands_df  %>%
     dplyr::rowwise() %>%
-    dplyr::mutate( ttt = sum(dplyr::c_across(tidyselect::starts_with("t")))) %>%
-    dplyr::bind_cols( stands_df) %>%
-    dplyr::bind_cols( tt8) %>%
-    dplyr::mutate( forw_G15min.ha = .data$ttt * .data$Vharv + .data$t8) %>%
-    dplyr::mutate( forw_G15min.m3 = .data$forw_G15min.ha / .data$Vharv,
+    dplyr::mutate( t4t7 = .data$t4 + .data$t5 + .data$t6 + .data$t7 ) %>%
+    dplyr::mutate( forw_G15min.ha = .data$t4t7 * .data$Vharv + .data$t8) %>%
+    dplyr::mutate( forw_G15min.m3 = round(.data$forw_G15min.ha / .data$Vharv, 1),
                    forw_G15h.ha = round((.data$forw_G15min.ha / 60), 2),
-                   forw_m3.G15h = 60 / .data$forw_G15min.m3) %>%
+                   forw_m3.G15h = round( 60 / (.data$forw_G15min.ha / .data$Vharv), 2)) %>%
     #dplyr::select( #-tidyselect::starts_with("tt"),
                    #-.data$ttt,
                    #-tidyselect::num_range("t", 4:8)) %>%
     dplyr::select( tidyselect::starts_with("forw_"), tidyselect::everything())
 if(verbose == FALSE){
-  tforw_df <- tforw_df %>% dplyr::select(tidyselect::starts_with("forw_G"), "forw_m3.G15h")
+  stands_df <- stands_df %>% dplyr::select(tidyselect::starts_with("forw_G"), "forw_m3.G15h")
 }
-  return(tforw_df)
+  return(stands_df)
 }
 

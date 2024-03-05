@@ -39,11 +39,10 @@
 #' @export
 #'
 #' @examples
-#' bb_harv_forw(stands_df = testdata_clearcut_Talbot16) %>% dplyr::glimpse()
 #' bb_harv_forw(stands_df = testdata_heureka_forwarding) %>% dplyr::glimpse()
 bb_harv_forw <- function(stands_df, forw_size = "large", modelversion = "Talbot16"){
 
-  Tharvdat <- t_harv_bb(stands_df, modelversion = modelversion)
+  Tharvdat <- t_harv_clearfell_bb(stands_df, modelversion = modelversion)
   Tforwdat <- t_forw_bb(stands_df, forw_size = forw_size, modelversion = modelversion)
   Ttot <- dplyr::bind_cols(Tharvdat, Tforwdat) %>%
     dplyr::select( tidyselect::starts_with("harv_"), tidyselect::starts_with("forw_"), tidyselect::everything())

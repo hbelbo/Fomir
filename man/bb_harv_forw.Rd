@@ -45,6 +45,5 @@ bb_harv_forw
 \item{Nharv}{N harvested trees per hectare}}
 }
 \examples{
-bb_harv_forw(stands_df = testdata_clearcut_Talbot16) \%>\% dplyr::glimpse()
 bb_harv_forw(stands_df = testdata_heureka_forwarding) \%>\% dplyr::glimpse()
 }

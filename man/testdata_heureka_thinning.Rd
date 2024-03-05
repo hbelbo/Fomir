@@ -19,7 +19,6 @@ data.frame() with the following content:
  mean dia harvested / mean dia residual trees. BA weighted mean diameters.}
  \item{thinningnumber}{one of: 1, 2}
  \item{thinningsystem}{one of: striproad, striproad_with_midfield_machine, striproad_with_midfield_chainsaw}
- \item{treatment}{text; "clearcutting" (or "thinning")  }
  \item{solution_hr}{numeric; expected model output, to check if Brunberg's
  thinning  model is doing correct estimates on the dataset}
  \item{D}{Terrain transport distance (one way average)}

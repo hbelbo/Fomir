@@ -13,7 +13,6 @@ data.frame() with the following content:
  \item{L}{numeric; Slope class (sv: Lutning), Definition according “SkogForsk
  terrängtypschema” where 1 is flat (0-10\%), 2 is 10-20\%, 3 is 20-33\%, 4 is 33-50\%, 5 is >50\% }
  \item{D}{Terrain transport distance (one way average)}
- \item{treatment}{text; "clearcutting" (or "thinning")  }
  \item{nbAssortments}{numeric; Number of qualities and species. Afect t7 ForwarderSortingTime}
  \item{w}{width of strips between striproads}
  \item{forw_size}{can be "small", "medium", "large"}
